@@ -2,16 +2,16 @@ plugins {
     id 'com.android.library'
 }
 
-ext.pluginVersionCode = 5
-ext.pluginVersionName = "1.2.0"
+ext.pluginVersionCode = 6
+ext.pluginVersionName = "1.2.1"
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
+    namespace = "org.godotengine.godot.plugin.googleplaybilling"
 
+    compileSdk 34
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 31
+        targetSdkVersion 34
         versionCode pluginVersionCode
         versionName pluginVersionName
     }
@@ -25,6 +25,12 @@ android {
 
 dependencies {
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
-    implementation 'com.android.billingclient:billing:5.2.1'
+    implementation 'com.android.billingclient:billing:6.0.1'
     compileOnly fileTree(dir: 'libs', include: ['godot-lib*.aar'])
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
