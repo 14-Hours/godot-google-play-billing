@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2014-present Godot Engine Contributors (see AUTHORS.md).*/
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,11 @@
 /*************************************************************************/
 
 package org.godotengine.godot.plugin.googleplaybilling.utils;
-
 import org.godotengine.godot.Dictionary;
-
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
-
-import java.util.ArrayList;
+import com.android.billingclient.api.ProductDetails;
 import java.util.List;
+import java.util.Objects;
 
 public class GooglePlayBillingUtils {
 	public static Dictionary convertPurchaseToDictionary(Purchase purchase) {
@@ -49,35 +46,29 @@ public class GooglePlayBillingUtils {
 		dictionary.put("purchase_token", purchase.getPurchaseToken());
 		dictionary.put("quantity", purchase.getQuantity());
 		dictionary.put("signature", purchase.getSignature());
+		// PBL v6 replaced getSkus with getProducts, for a more generalized approach to items rather than relying on skus.
 		// PBL V4 replaced getSku with getSkus to support multi-sku purchases,
 		// use the first entry for "sku" and generate an array for "skus"
-		ArrayList<String> skus = purchase.getSkus();
-		dictionary.put("sku", skus.get(0));
-		String[] skusArray = skus.toArray(new String[0]);
-		dictionary.put("skus", skusArray);
+		List<String> products = purchase.getProducts();
+		dictionary.put("product", products.get(0));
+		String[] productsArray = products.toArray(new String[0]);
+		dictionary.put("products", productsArray);
 		dictionary.put("is_acknowledged", purchase.isAcknowledged());
 		dictionary.put("is_auto_renewing", purchase.isAutoRenewing());
 		return dictionary;
 	}
 
-	public static Dictionary convertSkuDetailsToDictionary(SkuDetails details) {
+	// Here is where we want to update it to make it more intelligent; this will have to include subscription data, but we'll make it smarter in how it handles it than what was there previously.
+	public static Dictionary convertProductDetailsToDictionary(ProductDetails details) {
+		ProductDetails.OneTimePurchaseOfferDetails purchaseDetails = Objects.requireNonNull(details.getOneTimePurchaseOfferDetails());
 		Dictionary dictionary = new Dictionary();
-		dictionary.put("sku", details.getSku());
+		dictionary.put("productId", details.getProductId());
 		dictionary.put("title", details.getTitle());
 		dictionary.put("description", details.getDescription());
-		dictionary.put("price", details.getPrice());
-		dictionary.put("price_currency_code", details.getPriceCurrencyCode());
-		dictionary.put("price_amount_micros", details.getPriceAmountMicros());
-		dictionary.put("free_trial_period", details.getFreeTrialPeriod());
-		dictionary.put("icon_url", details.getIconUrl());
-		dictionary.put("introductory_price", details.getIntroductoryPrice());
-		dictionary.put("introductory_price_amount_micros", details.getIntroductoryPriceAmountMicros());
-		dictionary.put("introductory_price_cycles", details.getIntroductoryPriceCycles());
-		dictionary.put("introductory_price_period", details.getIntroductoryPricePeriod());
-		dictionary.put("original_price", details.getOriginalPrice());
-		dictionary.put("original_price_amount_micros", details.getOriginalPriceAmountMicros());
-		dictionary.put("subscription_period", details.getSubscriptionPeriod());
-		dictionary.put("type", details.getType());
+		dictionary.put("price", purchaseDetails.getFormattedPrice());
+		dictionary.put("price_currency_code", purchaseDetails.getPriceCurrencyCode());
+		dictionary.put("price_amount_micros", purchaseDetails.getPriceAmountMicros());
+		dictionary.put("type", details.getProductType());
 		return dictionary;
 	}
 
@@ -91,13 +82,13 @@ public class GooglePlayBillingUtils {
 		return purchaseDictionaries;
 	}
 
-	public static Object[] convertSkuDetailsListToDictionaryObjectArray(List<SkuDetails> skuDetails) {
-		Object[] skuDetailsDictionaries = new Object[skuDetails.size()];
+	public static Object[] convertProductDetailsListToDictionaryObjectArray(List<ProductDetails> productDetails) {
+		Object[] productDetailsDictionaries = new Object[productDetails.size()];
 
-		for (int i = 0; i < skuDetails.size(); i++) {
-			skuDetailsDictionaries[i] = GooglePlayBillingUtils.convertSkuDetailsToDictionary(skuDetails.get(i));
+		for (int i = 0; i < productDetails.size(); i++) {
+			productDetailsDictionaries[i] = GooglePlayBillingUtils.convertProductDetailsToDictionary(productDetails.get(i));
 		}
 
-		return skuDetailsDictionaries;
+		return productDetailsDictionaries;
 	}
 }
