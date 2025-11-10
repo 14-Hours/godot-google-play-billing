@@ -48,7 +48,7 @@ public class GooglePlayBillingUtils {
 		dictionary.put("signature", purchase.getSignature());
 		// PBL v6 replaced getSkus with getProducts, for a more generalized approach to items rather than relying on skus.
 		// PBL V4 replaced getSku with getSkus to support multi-sku purchases,
-		// use the first entry for "sku" and generate an array for "skus"
+		// use the first entry for "product" and generate an array for "products"
 		List<String> products = purchase.getProducts();
 		dictionary.put("product", products.get(0));
 		String[] productsArray = products.toArray(new String[0]);
